@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="ShivaPro - Advanced AI text to video & audio generation tool with multi-language support including Kannada, English, Hindi and more.">
+  <meta name="keywords" content="text to video, text to audio, AI video generator, Kannada video creator, ShivaPro">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="ShivaPro – Text to Video & Audio Generator">
+  <meta property="og:description" content="Create professional videos and audio from text in multiple languages including Kannada">
+  <meta property="og:type" content="website">
+  <title>ShivaPro – AI Text to Video & Audio Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX" crossorigin="anonymous"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;700&family=Poppins:wght@300;400;500;600&display=swap');
+    
+    body {
+      font-family: 'Poppins', 'Noto Sans Kannada', sans-serif;
+    }
+    
+    .kannada-font {
+      font-family: 'Noto Sans Kannada', sans-serif;
+    }
+    
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #6366f1;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: #e0e7ff;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-value {
+      height: 100%;
+      background-color: #6366f1;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div id="app">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+            <h1 class="text-2xl font-bold text-indigo-600">ShivaPro</h1>
+          </div>
+          <nav class="hidden md:flex space-x-8">
+            <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Home</a>
+            <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Features</a>
+            <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Pricing</a>
+            <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Docs</a>
+            <a href="#" class="text-gray-600 hover:text-indigo-600 transition">Support</a>
+          </nav>
+          <button class="md:hidden text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Tool Header -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+          <h2 class="text-2xl font-bold mb-2">🎬 AI Video & Audio Generator</h2>
+          <p class="opacity-90">Transform your text into professional videos and audio in multiple languages</p>
+        </div>
+        
+        <!-- Tool Body -->
+        <div class="p-6">
+          <!-- Language Selection -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Choose Language:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <button 
+                v-for="lang in languages" 
+                :key="lang.value"
+                @click="selectedLanguage = lang.value"
+                :class="{
+                  'bg-indigo-100 border-indigo-500 text-indigo-700': selectedLanguage === lang.value,
+                  'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': selectedLanguage !== lang.value
+                }"
+                class="border rounded-md py-2 px-3 text-sm font-medium flex items-center justify-center transition"
+              >
+                <span :class="{'kannada-font': lang.value === 'kn'}">{{ lang.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Text Input -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Enter Your Script:</label>
+            <textarea 
+              v-model="scriptInput" 
+              rows="6" 
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
+              :placeholder="languagePlaceholders[selectedLanguage]"
+            ></textarea>
+            <div class="flex justify-between items-center mt-1">
+              <span class="text-xs text-gray-500">{{ scriptInput.length }}/5000 characters</span>
+              <button 
+                @click="scriptInput = ''" 
+                class="text-xs text-indigo-600 hover:text-indigo-800"
+                :disabled="!scriptInput"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Output Type Selection -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Output Type:</label>
+            <div class="grid grid-cols-2 gap-4">
+              <button 
+                @click="outputType = 'video'"
+                :class="{
+                  'bg-indigo-100 border-indigo-500 text-indigo-700': outputType === 'video',
+                  'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': outputType !== 'video'
+                }"
+                class="border rounded-md py-3 px-4 flex flex-col items-center transition"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Video</span>
+              </button>
+              <button 
+                @click="outputType = 'audio'"
+                :class="{
+                  'bg-indigo-100 border-indigo-500 text-indigo-700': outputType === 'audio',
+                  'bg-white border-gray-300 text-gray-700 hover:bg-gray-50': outputType !== 'audio'
+                }"
+                class="border rounded-md py-3 px-4 flex flex-col items-center transition"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <span>Audio</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Advanced Settings (Collapsible) -->
+          <div class="mb-6 border border-gray-200 rounded-md overflow-hidden">
+            <button 
+              @click="showAdvancedSettings = !showAdvancedSettings"
+              class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 transition"
+            >
+              <span class="font-medium text-gray-700">Advanced Settings</span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                class="h-5 w-5 text-gray-500 transform transition-transform" 
+                :class="{'rotate-180': showAdvancedSettings}"
+                viewBox="0 0 20 20" 
+                fill="currentColor"
+              >
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            
+            <div v-if="showAdvancedSettings" class="p-4 border-t border-gray-200 fade-in">
+              <!-- Quality Settings -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quality Settings:</label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div 
+                    v-for="quality in qualityOptions" 
+                    :key="quality.value"
+                    @click="selectedQuality = quality.value"
+                    :class="{
+                      'border-indigo-500 bg-indigo-50': selectedQuality === quality.value,
+                      'border-gray-300 hover:border-indigo-300': selectedQuality !== quality.value
+                    }"
+                    class="border rounded-md p-3 cursor-pointer transition"
+                  >
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center mr-2 mt-0.5"
+                        :class="{
+                          'border-indigo-500': selectedQuality === quality.value,
+                          'border-gray-300': selectedQuality !== quality.value
+                        }"
+                      >
+                        <div v-if="selectedQuality === quality.value" class="h-3 w-3 rounded-full bg-indigo-600"></div>
+                      </div>
+                      <div>
+                        <h4 class="font-medium text-gray-900">{{ quality.label }}</h4>
+                        <p class="text-xs text-gray-500">{{ quality.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Voice Selection (for audio) -->
+              <div class="mb-4" v-if="outputType === 'audio'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Voice Selection:</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div 
+                    v-for="voice in voiceOptions" 
+                    :key="voice.value"
+                    @click="selectedVoice = voice.value"
+                    :class="{
+                      'border-indigo-500 bg-indigo-50': selectedVoice === voice.value,
+                      'border-gray-300 hover:border-indigo-300': selectedVoice !== voice.value
+                    }"
+                    class="border rounded-md p-3 cursor-pointer transition"
+                  >
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center mr-2 mt-0.5"
+                        :class="{
+                          'border-indigo-500': selectedVoice === voice.value,
+                          'border-gray-300': selectedVoice !== voice.value
+                        }"
+                      >
+                        <div v-if="selectedVoice === voice.value" class="h-3 w-3 rounded-full bg-indigo-600"></div>
+                      </div>
+                      <div>
+                        <h4 class="font-medium text-gray-900">{{ voice.label }}</h4>
+                        <p class="text-xs text-gray-500">{{ voice.language }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Video Theme Selection -->
+              <div class="mb-4" v-if="outputType === 'video'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Video Theme:</label>
+                <select 
+                  v-model="selectedTheme" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option v-for="theme in themeOptions" :value="theme.value">{{ theme.label }}</option>
+                </select>
+              </div>
+              
+              <!-- Output Format -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Output Format:</label>
+                <select 
+                  v-model="selectedFormat" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option v-for="format in formatOptions" :value="format.value">{{ format.label }}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate Button -->
+          <button 
+            @click="generateMedia" 
+            :disabled="!scriptInput || isGenerating"
+            :class="{
+              'bg-indigo-600 hover:bg-indigo-700': scriptInput && !isGenerating,
+              'bg-indigo-400 cursor-not-allowed': !scriptInput || isGenerating
+            }"
+            class="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition flex items-center justify-center"
+          >
+            <span v-if="!isGenerating">
+              {{ outputType === 'video' ? '🎥 Generate Video' : '🔊 Generate Audio' }}
+            </span>
+            <span v-else class="flex items-center">
+              <span class="loading-spinner mr-2"></span>
+              Generating... ({{ generationProgress }}%)
+            </span>
+          </button>
+          
+          <!-- Progress Bar -->
+          <div v-if="isGenerating" class="mt-3">
+            <div class="progress-bar">
+              <div class="progress-value" :style="{width: generationProgress + '%'}"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Preview -->
+      <div v-if="showResult" class="mt-8 bg-white rounded-xl shadow-md overflow-hidden fade-in">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            Your {{ outputType === 'video' ? 'Video' : 'Audio' }} Result
+          </h3>
+          
+          <div v-if="outputType === 'video'" class="bg-black rounded-lg overflow-hidden">
+            <!-- Video Preview Placeholder -->
+            <div class="aspect-w-16 aspect-h-9 flex items-center justify-center bg-gray-800">
+              <div v-if="!generatedUrl" class="text-white p-8 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <p>Your video will appear here once generated</p>
+              </div>
+              <video v-else controls class="w-full">
+                <source :src="generatedUrl" :type="'video/' + selectedFormat">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+          
+          <div v-else class="bg-gray-100 rounded-lg p-6">
+            <!-- Audio Preview Placeholder -->
+            <div class="flex items-center justify-center">
+              <div v-if="!generatedUrl" class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                <p>Your audio will appear here once generated</p>
+              </div>
+              <audio v-else controls class="w-full">
+                <source :src="generatedUrl" :type="'audio/' + selectedFormat">
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+          
+          <!-- Download Options -->
+          <div v-if="generatedUrl" class="mt-6 flex flex-wrap gap-3">
+            <button 
+              @click="downloadMedia"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+              Download
+            </button>
+            <button 
+              @click="shareMedia"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+              </svg>
+              Share
+            </button>
+            <button 
+              @click="saveToCloud"
+              class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
+              </svg>
+              Save to Cloud
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Ad Section -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div class="text-center text-xs text-gray-500 mb-2">Advertisement</div>
+        <!-- Google AdSense -->
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-XXXXXXXXXXXX"
+             data-ad-slot="1234567890"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-lg font-semibold mb-4">ShivaPro</h3>
+            <p class="text-gray-400 text-sm">Advanced AI-powered text to video and audio generation tool with multi-language support.</p>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold uppercase tracking-wider mb-4">Product</h4>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Features</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Pricing</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">API</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Integrations</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold uppercase tracking-wider mb-4">Resources</h4>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Documentation</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Tutorials</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Support</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-sm font-semibold uppercase tracking-wider mb-4">Company</h4>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition">About</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Careers</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Terms</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-400">
+          © 2025 ShivaPro. All rights reserved. Built with ❤️ for creators worldwide.
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const { createApp, ref, watch } = Vue;
+    
+    createApp({
+      setup() {
+        // Language options
+        const languages = ref([
+          { value: 'kn', label: 'ಕನ್ನಡ', english: 'Kannada' },
+          { value: 'en', label: 'English', english: 'English' },
+          { value: 'hi', label: 'हिन्दी', english: 'Hindi' },
+          { value: 'ta', label: 'தமிழ்', english: 'Tamil' },
+          { value: 'te', label: 'తెలుగు', english: 'Telugu' },
+          { value: 'ml', label: 'മലയാളം', english: 'Malayalam' },
+          { value: 'mr', label: 'मराठी', english: 'Marathi' },
+          { value: 'bn', label: 'বাংলা', english: 'Bengali' }
+        ]);
+        
+        // Language-specific placeholders
+        const languagePlaceholders = ref({
+          kn: 'ನಿಮ್ಮ ಕಥೆ, ವಿವರಣೆ ಅಥವಾ ಪ್ರಾಂಪ್ಟ್ ಅನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ...',
+          en: 'Enter your story, description, or prompt here...',
+          hi: 'अपनी कहानी, विवरण या प्रॉम्प्ट यहाँ दर्ज करें...',
+          ta: 'உங்கள் கதை, விளக்கம் அல்லது தூண்டுதலை இங்கே உள்ளிடவும்...',
+          te: 'మీ కథ, వివరణ లేదా ప్రాంప్ట్‌ను ఇక్కడ నమోదు చేయండి...',
+          ml: 'നിങ്ങളുടെ കഥ, വിവരണം അല്ലെങ്കിൽ പ്രോംപ്റ്റ് ഇവിടെ നൽകുക...',
+          mr: 'तुमची कथा, वर्णन किंवा प्रॉम्प्ट येथे प्रविष्ट करा...',
+          bn: 'আপনার গল্প, বিবরণ বা প্রম্পট এখানে লিখুন...'
+        });
+        
+        // Quality options
+        const qualityOptions = ref([
+          { value: 'low', label: 'Low Quality', description: 'Fast rendering, smaller file size' },
+          { value: 'medium', label: 'Medium Quality', description: 'Good balance of quality and speed' },
+          { value: 'high', label: 'High Quality', description: 'Best quality, slower rendering' }
+        ]);
+        
+        // Voice options
+        const voiceOptions = ref([
+          { value: 'male1', label: 'Male Voice 1', language: 'Standard' },
+          { value: 'male2', label: 'Male Voice 2', language: 'Standard' },
+          { value: 'female1', label: 'Female Voice 1', language: 'Standard' },
+          { value: 'female2', label: 'Female Voice 2', language: 'Standard' },
+          { value: 'kn_male', label: 'Kannada Male', language: 'Kannada' },
+          { value: 'kn_female', label: 'Kannada Female', language: 'Kannada' },
+          { value: 'hi_male', label: 'Hindi Male', language: 'Hindi' },
+          { value: 'hi_female', label: 'Hindi Female', language: 'Hindi' }
+        ]);
+        
+        // Theme options
+        const themeOptions = ref([
+          { value: 'professional', label: 'Professional' },
+          { value: 'modern', label: 'Modern' },
+          { value: 'minimal', label: 'Minimal' },
+          { value: 'creative', label: 'Creative' },
+          { value: 'news', label: 'News Style' },
+          { value: 'educational', label: 'Educational' }
+        ]);
+        
+        // Format options
+        const formatOptions = ref([
+          { value: 'mp4', label: 'MP4 (Video)' },
+          { value: 'mov', label: 'MOV (Video)' },
+          { value: 'webm', label: 'WebM (Video)' },
+          { value: 'mp3', label: 'MP3 (Audio)' },
+          { value: 'wav', label: 'WAV (Audio)' },
+          { value: 'ogg', label: 'OGG (Audio)' }
+        ]);
+        
+        // Reactive state
+        const selectedLanguage = ref('kn');
+        const scriptInput = ref('');
+        const outputType = ref('video');
+        const selectedQuality = ref('medium');
+        const selectedVoice = ref('female1');
+        const selectedTheme = ref('professional');
+        const selectedFormat = ref('mp4');
+        const showAdvancedSettings = ref(false);
+        const isGenerating = ref(false);
+        const generationProgress = ref(0);
+        const generatedUrl = ref('');
+        const showResult = ref(false);
+        
+        // Filter format options based on output type
+        watch(outputType, (newVal) => {
+          if (newVal === 'video') {
+            selectedFormat.value = 'mp4';
+            formatOptions.value = [
+              { value: 'mp4', label: 'MP4 (Video)' },
+              { value: 'mov', label: 'MOV (Video)' },
+              { value: 'webm', label: 'WebM (Video)' }
+            ];
+          } else {
+            selectedFormat.value = 'mp3';
+            formatOptions.value = [
+              { value: 'mp3', label: 'MP3 (Audio)' },
+              { value: 'wav', label: 'WAV (Audio)' },
+              { value: 'ogg', label: 'OGG (Audio)' }
+            ];
+          }
+        });
+        
+        // Generate media function
+        const generateMedia = () => {
+          if (!scriptInput.value.trim()) {
+            alert('Please enter a valid script.');
+            return;
+          }
+          
+          isGenerating.value = true;
+          showResult.value = true;
+          generationProgress.value = 0;
+          generatedUrl.value = '';
+          
+          // Simulate generation progress
+          const interval = setInterval(() => {
+            generationProgress.value += Math.floor(Math.random() * 10) + 1;
+            if (generationProgress.value >= 100) {
+              clearInterval(interval);
+              isGenerating.value = false;
+              
+              // Simulate generated media URL
+              // In a real app, this would come from your backend API
+              if (outputType.value === 'video') {
+                generatedUrl.value = 'https://sample-videos.com/video123/mp4/720/sample.mp4';
+              } else {
+                generatedUrl.value = 'https://sample-videos.com/audio/mp3/sample.mp3';
+              }
+            }
+          }, 500);
+        };
+        
+        // Download media function
+        const downloadMedia = () => {
+          if (!generatedUrl.value) return;
+          
+          // In a real app, this would trigger a download from your server
+          const a = document.createElement('a');
+          a.href = generatedUrl.value;
+          a.download = `shivapro-${outputType.value}-${Date.now()}.${selectedFormat.value}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+        
+        // Share media function
+        const shareMedia = () => {
+          alert('In a real implementation, this would share your media');
+        };
+        
+        // Save to cloud function
+        const saveToCloud = () => {
+          alert('In a real implementation, this would save to your cloud storage');
+        };
+        
+        return {
+          languages,
+          languagePlaceholders,
+          qualityOptions,
+          voiceOptions,
+          themeOptions,
+          formatOptions,
+          selectedLanguage,
+          scriptInput,
+          outputType,
+          selectedQuality,
+          selectedVoice,
+          selectedTheme,
+          selectedFormat,
+          showAdvancedSettings,
+          isGenerating,
+          generationProgress,
+          generatedUrl,
+          showResult,
+          generateMedia,
+          downloadMedia,
+          shareMedia,
+          saveToCloud
+        };
+      }
+    }).mount('#app');
+  </script>
+
+  <!-- Structured data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ShivaPro - AI Text to Video & Audio Generator",
+    "description": "Create professional videos and audio from text in multiple languages including Kannada, English, Hindi and more",
+    "url": "https://shivapro.example.com",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "Web Browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "ShivaPro"
+    }
+  }
+  </script>
+</body>
+</html>
